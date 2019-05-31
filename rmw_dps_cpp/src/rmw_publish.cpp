@@ -21,6 +21,7 @@
 
 #include "rmw_dps_cpp/CborStream.hpp"
 #include "rmw_dps_cpp/custom_publisher_info.hpp"
+#include "rmw_dps_cpp/ContextImplementation.hpp"
 #include "rmw_dps_cpp/identifier.hpp"
 #include "ros_message_serialization.hpp"
 
@@ -51,6 +52,33 @@ rmw_publish(
   auto info = static_cast<CustomPublisherInfo *>(publisher->data);
   assert(info);
 
+  auto context = info->context_;
+
+  /*
+  void* non_const_ros_message = const_cast<void*>(ros_message);
+  context->impl->push_to_queues(publisher->topic_name, non_const_ros_message);
+  return RMW_RET_OK;
+  */
+
+  rmw_dps_cpp::cbor::TxStream ser;
+
+  if (_serialize_ros_message(ros_message, ser, info->type_support_,
+    info->typesupport_identifier_))
+  {
+
+    auto buffer = std::make_shared<rmw_dps_cpp::cbor::RxStream>(ser.data(), ser.size());
+    //rmw_dps_cpp::cbor::RxStream buffer(ser.data(), ser.size());
+
+    context->impl->push_to_queues(publisher->topic_name, buffer);
+    returnedValue = RMW_RET_OK;
+  } else {
+    RMW_SET_ERROR_MSG("cannot serialize data");
+  }
+
+  return returnedValue;
+
+
+  /*
   rmw_dps_cpp::cbor::TxStream ser;
 
   if (_serialize_ros_message(ros_message, ser, info->type_support_,
@@ -65,6 +93,7 @@ rmw_publish(
   }
 
   return returnedValue;
+  */
 }
 
 rmw_ret_t

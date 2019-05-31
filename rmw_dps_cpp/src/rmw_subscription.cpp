@@ -24,6 +24,9 @@
 #include "rmw_dps_cpp/custom_subscriber_info.hpp"
 #include "rmw_dps_cpp/identifier.hpp"
 #include "type_support_common.hpp"
+#include "rmw_dps_cpp/ContextImplementation.hpp"
+
+#include <iostream>
 
 extern "C"
 {
@@ -157,6 +160,8 @@ rmw_create_subscription(
   memcpy(const_cast<char *>(rmw_subscription->topic_name), topic_name,
     strlen(topic_name) + 1);
 
+  node->context->impl->add_subscription(rmw_subscription);
+
   return rmw_subscription;
 
 fail:
@@ -196,6 +201,8 @@ rmw_subscription_count_matched_publishers(
 rmw_ret_t
 rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
 {
+  std::cout<<"rmw_destroy_subscription"<<std::endl;
+
   RCUTILS_LOG_DEBUG_NAMED(
     "rmw_dps_cpp",
     "%s(node=%p,subscription=%p)", __FUNCTION__, (void *)node, (void *)subscription);
@@ -219,6 +226,8 @@ rmw_destroy_subscription(rmw_node_t * node, rmw_subscription_t * subscription)
     RMW_SET_ERROR_MSG("node handle not from this implementation");
     return RMW_RET_ERROR;
   }
+
+  node->context->impl->remove_subscription(subscription);
 
   auto info = static_cast<CustomSubscriberInfo *>(subscription->data);
 

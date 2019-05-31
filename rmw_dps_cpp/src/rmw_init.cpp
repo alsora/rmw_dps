@@ -27,12 +27,17 @@ __declspec(dllimport) int DPS_Debug;
 #include "rmw/rmw.h"
 
 #include "rmw_dps_cpp/identifier.hpp"
+#include "rmw_dps_cpp/ContextImplementation.hpp"
+
+#include <iostream>
 
 extern "C"
 {
 rmw_ret_t
 rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t allocator)
 {
+  std::cout<<"rmw_init_options_init"<<std::endl;
+
   RMW_CHECK_ARGUMENT_FOR_NULL(init_options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ALLOCATOR(&allocator, return RMW_RET_INVALID_ARGUMENT);
   if (NULL != init_options->implementation_identifier) {
@@ -49,6 +54,9 @@ rmw_init_options_init(rmw_init_options_t * init_options, rcutils_allocator_t all
 rmw_ret_t
 rmw_init_options_copy(const rmw_init_options_t * src, rmw_init_options_t * dst)
 {
+
+  std::cout<<"rmw_init_options_copy"<<std::endl;
+
   RMW_CHECK_ARGUMENT_FOR_NULL(src, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_ARGUMENT_FOR_NULL(dst, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -67,6 +75,9 @@ rmw_init_options_copy(const rmw_init_options_t * src, rmw_init_options_t * dst)
 rmw_ret_t
 rmw_init_options_fini(rmw_init_options_t * init_options)
 {
+
+  std::cout<<"rmw_init_options_fini"<<std::endl;
+
   RMW_CHECK_ARGUMENT_FOR_NULL(init_options, RMW_RET_INVALID_ARGUMENT);
   RCUTILS_CHECK_ALLOCATOR(&(init_options->allocator), return RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
@@ -95,7 +106,7 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 
   context->instance_id = options->instance_id;
   context->implementation_identifier = intel_dps_identifier;
-  context->impl = nullptr;
+  context->impl = new rmw_context_impl_t();
 
   rcutils_ret_t ret = rcutils_logging_set_logger_level("rmw_dps_cpp", RCUTILS_LOG_SEVERITY_ERROR);
   (void)ret;
@@ -107,6 +118,9 @@ rmw_init(const rmw_init_options_t * options, rmw_context_t * context)
 rmw_ret_t
 rmw_shutdown(rmw_context_t * context)
 {
+
+  std::cout<<"rmw_shutdown"<<std::endl;
+
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context,
@@ -121,6 +135,9 @@ rmw_shutdown(rmw_context_t * context)
 rmw_ret_t
 rmw_context_fini(rmw_context_t * context)
 {
+
+  std::cout<<"rmw_context_fini"<<std::endl;
+
   RCUTILS_CHECK_ARGUMENT_FOR_NULL(context, RMW_RET_INVALID_ARGUMENT);
   RMW_CHECK_TYPE_IDENTIFIERS_MATCH(
     context,

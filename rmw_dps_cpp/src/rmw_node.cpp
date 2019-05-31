@@ -24,6 +24,7 @@
 
 #include "rmw_dps_cpp/custom_node_info.hpp"
 #include "rmw_dps_cpp/identifier.hpp"
+#include "rmw_dps_cpp/ContextImplementation.hpp"
 
 extern "C"
 {
@@ -111,6 +112,8 @@ create_node(
     goto fail;
   }
   memcpy(const_cast<char *>(node_handle->namespace_), namespace_, strlen(namespace_) + 1);
+
+  node_handle->context = context;
 
   node_impl->node_ = DPS_CreateNode(nullptr, nullptr, nullptr);
   if (!node_impl->node_) {

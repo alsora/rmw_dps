@@ -42,6 +42,7 @@ include_directories(
   ${dps_for_iot_INCLUDE_DIR})
 
 add_library(rmw_dps_cpp
+  src/ContextImplementation.cpp
   src/client_service_common.cpp
   src/identifier.cpp
   src/rmw_client.cpp

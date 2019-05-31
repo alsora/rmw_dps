@@ -27,6 +27,7 @@ typedef struct CustomPublisherInfo
   DPS_Publication * publication_;
   void * type_support_;
   const char * typesupport_identifier_;
+  rmw_context_t * context_;
 } CustomPublisherInfo;
 
 #endif  // RMW_DPS_CPP__CUSTOM_PUBLISHER_INFO_HPP_

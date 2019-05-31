@@ -59,6 +59,30 @@ _take(
   CustomSubscriberInfo * info = static_cast<CustomSubscriberInfo *>(subscription->data);
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(info, "custom subscriber info is null", return RMW_RET_ERROR);
 
+  std::shared_ptr<rmw_dps_cpp::cbor::RxStream> buffer;
+  Publication pub;
+
+  //bool success = info->queue_->try_dequeue(buffer);
+  bool success = true;
+  info->queue_->consume(buffer);
+  if (success){
+    // this has to be changed once deserialize happens only once
+    rmw_dps_cpp::cbor::RxStream buf2 = *buffer;
+    _deserialize_ros_message(buf2, ros_message, info->type_support_,
+      info->typesupport_identifier_);
+    if (message_info) {
+      _assign_message_info(message_info, pub.get());
+    }
+    *taken = true;
+    return RMW_RET_OK;
+  }
+
+  if (!info->listener_->hasData()){
+    RMW_SET_ERROR_MSG("_take called with no data in the queue or in the listener");
+    return RMW_RET_ERROR;
+  }
+
+  /*
   rmw_dps_cpp::cbor::RxStream buffer;
   Publication pub;
 
@@ -72,6 +96,7 @@ _take(
   }
 
   return RMW_RET_OK;
+  */
 }
 
 rmw_ret_t
@@ -115,8 +140,8 @@ rmw_take_with_info(
 
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     subscription, "subscription pointer is null", return RMW_RET_ERROR);
-  RCUTILS_CHECK_FOR_NULL_WITH_MSG(
-    ros_message, "ros_message pointer is null", return RMW_RET_ERROR);
+  //RCUTILS_CHECK_FOR_NULL_WITH_MSG(
+    //ros_message, "ros_message pointer is null", return RMW_RET_ERROR);
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(
     taken, "boolean flag for taken is null", return RMW_RET_ERROR);
   RCUTILS_CHECK_FOR_NULL_WITH_MSG(

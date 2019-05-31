@@ -25,7 +25,14 @@
 #include <utility>
 #include <vector>
 
+#include "rcutils/logging_macros.h"
+
+#include "rmw_dps_cpp/concurrent_queue.h"
+#include "rmw_dps_cpp/cpqueue.h"
 #include "rmw_dps_cpp/CborStream.hpp"
+#include "rmw_dps_cpp/ContextImplementation.hpp"
+
+#include <iostream>
 
 struct PublicationDeleter
 {
@@ -36,6 +43,10 @@ typedef std::unique_ptr<DPS_Publication, PublicationDeleter> Publication;
 
 class Listener
 {
+
+typedef std::shared_ptr<rmw_dps_cpp::cbor::RxStream> IPCMessageT;
+
+
 public:
   using Data = std::pair<Publication, rmw_dps_cpp::cbor::RxStream>;
 
@@ -69,6 +80,31 @@ public:
       listener->conditionVariable_->notify_one();
     } else {
       listener->data_.push(std::move(data));
+    }
+  }
+
+  static void
+  onIPCPublication(
+    Listener * listener,
+    //std::shared_ptr<moodycamel::ConcurrentQueue<IPCMessageT>> queue,
+    std::shared_ptr<ConsumerProducerQueue<IPCMessageT>> queue,
+    IPCMessageT ros_message)
+  {
+
+    // this is needed to ensure that attachCondition and detachCondition are called properly
+    std::lock_guard<std::mutex> lock(listener->internalMutex_);
+
+    if (listener->conditionMutex_) {
+      std::unique_lock<std::mutex> clock(*listener->conditionMutex_);
+      // the change to data_ needs to be mutually exclusive with rmw_wait()
+      // which checks hasData() and decides if wait() needs to be called
+      //queue->enqueue(ros_message);
+      queue->add(ros_message);
+      clock.unlock();
+      listener->conditionVariable_->notify_one();
+    } else {
+      queue->add(ros_message);
+      //queue->enqueue(ros_message);
     }
   }
 

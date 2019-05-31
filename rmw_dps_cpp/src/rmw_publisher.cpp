@@ -23,6 +23,8 @@
 #include "rmw_dps_cpp/custom_node_info.hpp"
 #include "rmw_dps_cpp/custom_publisher_info.hpp"
 #include "rmw_dps_cpp/identifier.hpp"
+#include "rmw_dps_cpp/ContextImplementation.hpp"
+
 #include "type_support_common.hpp"
 
 const char * qos_history_string(rmw_qos_history_policy_t history)
@@ -177,6 +179,8 @@ rmw_create_publisher(
     RMW_SET_ERROR_MSG("failed to initialize publication");
     goto fail;
   }
+
+  info->context_ = node->context;
 
   rmw_publisher = rmw_publisher_allocate();
   if (!rmw_publisher) {

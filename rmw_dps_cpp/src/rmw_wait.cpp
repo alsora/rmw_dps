@@ -36,7 +36,7 @@ check_wait_set_for_data(
       void * data = subscriptions->subscribers[i];
       auto custom_subscriber_info = static_cast<CustomSubscriberInfo *>(data);
       // Short circuiting out of this function is possible
-      if (custom_subscriber_info && custom_subscriber_info->listener_->hasData()) {
+      if (custom_subscriber_info && custom_subscriber_info->hasData()) {
         return true;
       }
     }
@@ -185,7 +185,7 @@ rmw_wait(
       void * data = subscriptions->subscribers[i];
       auto custom_subscriber_info = static_cast<CustomSubscriberInfo *>(data);
       custom_subscriber_info->listener_->detachCondition();
-      if (!custom_subscriber_info->listener_->hasData()) {
+      if (!custom_subscriber_info->hasData()) {
         subscriptions->subscribers[i] = 0;
       }
     }
